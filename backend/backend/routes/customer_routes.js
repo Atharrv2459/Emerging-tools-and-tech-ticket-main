@@ -7,3 +7,4 @@ const router = express.Router();
 
 router.get('/tickets',authenticate,authorizeRoles('customer', 'agent'), myTickets);
 router.post('/ticket',authenticate,authorizeRoles('customer', 'manager', 'agent', 'delivery_lead'),createTicket);
+export default router;

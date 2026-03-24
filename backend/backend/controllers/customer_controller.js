@@ -1,5 +1,4 @@
 import pool from '../config/db.js';
-import {sendCustomerCommentEmail} from '../services/emailService.js';
 export const createTicket = async (req, res) => {
   try {
 

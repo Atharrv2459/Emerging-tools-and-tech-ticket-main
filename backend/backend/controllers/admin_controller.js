@@ -1,4 +1,16 @@
+import pool from '../config/db.js';
+import bcrypt from 'bcrypt';
+import { sendUserCredentialsEmail } from '../services/emailService.js';
 
+// Generate a random temporary password
+function generateTempPassword(length = 12) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%';
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+}
 export const oldaddUser = async (req, res) => {
   try {
     const {
@@ -15,14 +27,13 @@ export const oldaddUser = async (req, res) => {
       manager_email
     } = req.body;
 
-    /* ---------------- BASIC VALIDATION ---------------- */
+
     if (!name || !email || !role || !account_name) {
       return res.status(400).json({
         message: 'name, email, role and account_name are required'
       });
     }
 
-    /* ---------------- ROLE VALIDATION ---------------- */
     const roleResult = await pool.query(
       `SELECT id FROM roles WHERE role_name = $1`,
       [role]
@@ -38,9 +49,6 @@ export const oldaddUser = async (req, res) => {
     let resolvedDeliveryLeadEmail = null;
     let resolvedManagerEmail = null;
 
-    /* =================================================
-       CUSTOMER VALIDATION
-    ================================================= */
     if (role === 'customer') {
       if (!customer_type) {
         return res.status(400).json({
@@ -48,7 +56,6 @@ export const oldaddUser = async (req, res) => {
         });
       }
 
-      // NORMAL CUSTOMER
       if (customer_type === 'customer') {
         if (!manager_email || !delivery_lead_email) {
           return res.status(400).json({
@@ -57,7 +64,7 @@ export const oldaddUser = async (req, res) => {
           });
         }
 
-        // Validate manager
+
         const managerResult = await pool.query(
           `
           SELECT id, email FROM users
@@ -74,7 +81,7 @@ export const oldaddUser = async (req, res) => {
 
         resolvedManagerEmail = managerResult.rows[0].email;
 
-        // Validate delivery lead
+
         const leadResult = await pool.query(
           `
           SELECT id, email FROM users
@@ -238,14 +245,14 @@ export const addUser = async (req, res) => {
       manager_email
     } = req.body;
 
-    /* ---------------- BASIC VALIDATION ---------------- */
+
     if (!name || !email || !role || !account_name) {
       return res.status(400).json({
         message: 'name, email, role and account_name are required'
       });
     }
 
-    /* ---------------- ROLE VALIDATION ---------------- */
+
     const roleResult = await pool.query(
       `SELECT id FROM roles WHERE role_name = $1`,
       [role]
