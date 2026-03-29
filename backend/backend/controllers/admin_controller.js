@@ -2,7 +2,6 @@ import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
 import { sendUserCredentialsEmail } from '../services/emailService.js';
 
-// Generate a random temporary password
 function generateTempPassword(length = 12) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%';
   let password = '';

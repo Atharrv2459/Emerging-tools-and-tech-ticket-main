@@ -72,3 +72,46 @@ export const sendUserCredentialsEmail = async ({
 
   console.log('Email sent response:', response);
 };
+
+export const sendTicketRaisedEmail = async ({ to, ticket }) => {
+  const html = `
+    <h3>Ticket Created Successfully</h3>
+    <p>Your ticket has been submitted.</p>
+    <p><strong>Ticket ID:</strong> ${ticket.id}</p>
+    <p><strong>Subject:</strong> ${ticket.subject}</p>
+    <p><strong>Category:</strong> ${ticket.category}</p>
+    <p><strong>Priority:</strong> ${ticket.priority}</p>
+    <p><strong>Status:</strong> ${ticket.status}</p>
+    <p>You will be notified when there are updates.</p>
+  `;
+
+  await transporter.sendMail({
+    from: `"Support Team" <${process.env.SMTP_USER}>`,
+    to,
+    subject: `Ticket #${ticket.id} Created - ${ticket.subject}`,
+    html
+  });
+};
+
+export const sendTicketRaisedToManagerEmail = async ({ to, ticket, customer }) => {
+  const html = `
+    <h3>New Ticket Pending Approval</h3>
+    <p>A new ticket has been raised by a customer under your management.</p>
+    <hr/>
+    <p><strong>Customer Name:</strong> ${customer.name}</p>
+    <p><strong>Customer Email:</strong> ${customer.email}</p>
+    <hr/>
+    <p><strong>Ticket ID:</strong> ${ticket.id}</p>
+    <p><strong>Subject:</strong> ${ticket.subject}</p>
+    <p><strong>Category:</strong> ${ticket.category}</p>
+    <p><strong>Priority:</strong> ${ticket.priority}</p>
+    <p>Please login to approve or reject this ticket.</p>
+  `;
+
+  await transporter.sendMail({
+    from: `"Support Team" <${process.env.SMTP_USER}>`,
+    to,
+    subject: `Ticket #${ticket.id} Pending Approval - ${ticket.subject}`,
+    html
+  });
+};

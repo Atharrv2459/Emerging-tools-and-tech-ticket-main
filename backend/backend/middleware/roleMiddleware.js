@@ -22,14 +22,11 @@ export const authorizeAgentTypes = (...types) => {
 
 export const authorizeCustomerTypes = (...allowedTypes) => {
   return (req, res, next) => {
-    // Safety check: role must be customer
     if (req.user.role !== 'customer') {
       return res.status(403).json({
         message: 'Access denied'
       });
     }
-
-    // Check customer_type
     if (!allowedTypes.includes(req.user.customer_type)) {
       return res.status(403).json({
         message: 'Access denied'

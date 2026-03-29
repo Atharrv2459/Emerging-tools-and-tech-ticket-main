@@ -1,4 +1,5 @@
 import pool from '../config/db.js';
+import { sendTicketRaisedEmail, sendTicketRaisedToManagerEmail } from '../services/emailService.js';
 export const createTicket = async (req, res) => {
   try {
 
@@ -237,7 +238,7 @@ export const createTicket = async (req, res) => {
 
   } catch (error) {
     console.error("Create ticket error:", error);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: error.message });
   }
 };
 

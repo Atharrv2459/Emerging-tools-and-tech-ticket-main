@@ -17,6 +17,8 @@ app.use(cors());
 app.use(express.json());
 
 await testDbConnection();
+await bootstrapAdmin();
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/customer', customerRoutes);
