@@ -185,22 +185,8 @@ export const createTicket = async (req, res) => {
 
     const ticketId = insertResult.rows[0].id;
 
-    if (req.uploadedFiles?.length) {
-      for (const file of req.uploadedFiles) {
-        await pool.query(
-          `
-          INSERT INTO ticket_attachments (
-            ticket_id,
-            file_name,
-            file_path,
-            uploaded_by
-          )
-          VALUES ($1,$2,$3,$4)
-          `,
-          [ticketId, file.originalname, file.s3_key, userId]
-        );
-      }
-    }
+    // Note: File attachment upload feature is disabled (no S3 configured)
+    // If you need file uploads, configure a local storage solution
 
     sendTicketRaisedEmail({
       to: dbEmail,
@@ -277,5 +263,100 @@ export const myTickets = async (req, res) => {
   } catch (error) {
     console.error("Fetch my tickets error:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+export const addComment = async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+    const { comment } = req.body;
+    const userId = req.user.user_id;
+    const userRole = req.user.role;
+
+    if (!comment || comment.trim() === '') {
+      return res.status(400).json({ message: 'Comment cannot be empty' });
+    }
+
+    await pool.query(
+      `INSERT INTO ticket_comments (ticket_id, commented_by, comment_text, commented_role)
+       VALUES ($1, $2, $3, $4)`,
+      [ticketId, userId, comment, userRole]
+    );
+
+    res.status(201).json({ message: 'Comment added successfully' });
+
+  } catch (error) {
+    console.error('Add comment error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+export const getTicketComments = async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+
+    const result = await pool.query(
+      `SELECT
+        tc.id,
+        tc.comment_text,
+        tc.comment_text AS comment,
+        tc.comment_subject,
+        tc.commented_role,
+        tc.commented_role AS user_role,
+        tc.created_at,
+        u.id AS user_id,
+        u.name AS commented_by_name,
+        u.name AS user_name,
+        r.role_name
+       FROM ticket_comments tc
+       JOIN users u ON tc.commented_by = u.id
+       JOIN roles r ON u.role_id = r.id
+       WHERE tc.ticket_id = $1
+       ORDER BY tc.created_at ASC`,
+      [ticketId]
+    );
+
+    res.json(result.rows);
+
+  } catch (error) {
+    console.error('Get ticket comments error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+export const getMyProfile = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+
+    const result = await pool.query(
+      `
+      SELECT
+        u.id,
+        u.name,
+        u.email,
+        u.phone,
+        u.department,
+        u.organization,
+        u.account_name,
+        u.is_active,
+        u.created_at,
+        r.role_name
+      FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = $1
+      `,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(result.rows[0]);
+
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };

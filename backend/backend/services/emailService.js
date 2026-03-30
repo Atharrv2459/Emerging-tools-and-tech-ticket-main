@@ -115,3 +115,137 @@ export const sendTicketRaisedToManagerEmail = async ({ to, ticket, customer }) =
     html
   });
 };
+
+
+export const sendCustomerCommentEmail = async ({
+  to,
+  ticketId,
+  subject,
+  comment,
+  recipientType
+}) => {
+  const html = `
+    <h3>New Comment on Ticket</h3>
+
+    <p>A new comment has been added by the <strong>Customer</strong>.</p>
+
+    <p><strong>Ticket ID:</strong> ${ticketId}</p>
+
+    ${subject ? `<p><strong>Comment Subject:</strong> ${subject}</p>` : ''}
+
+    <p><strong>Comment:</strong></p>
+    <p>${comment}</p>
+
+    <br/>
+    <p>Please login to review the update.</p>
+  `;
+
+  await transporter.sendMail({
+    from: `"Ticket System" <${process.env.SMTP_USER}>`,
+    to,
+    subject: `New Comment on Ticket #${ticketId}`,
+    html
+  });
+};
+
+export const sendTicketApprovedEmail = async ({ toEmails, ticket }) => {
+  if (!toEmails.length) return;
+
+  const html = `
+    <h3>New Ticket Approved</h3>
+    <p>A new ticket has been approved by the manager.</p>
+    <p><strong>Ticket ID:</strong> ${ticket.id}</p>
+    <p><strong>Title:</strong> ${ticket.title}</p>
+    <p><strong>Description:</strong> ${ticket.description}</p>
+    <p><strong>Status:</strong> ${ticket.status}</p>
+    <br/>
+    <p>Please login to the system to accept or assign this ticket.</p>
+  `;
+
+  await transporter.sendMail({
+    from: `"Ticket System" <${process.env.SMTP_USER}>`,
+    to: toEmails.join(','),
+    subject: `Ticket #${ticket.id} Approved`,
+    html
+  });
+};
+
+// ------------------- mail send to customer when ticket is rejected -------------------
+export const sendTicketRejectedEmail = async ({ to, ticket }) => {
+  const html = `
+    <h3>Your Ticket Has Been Rejected</h3>
+
+    <p><strong>Ticket ID:</strong> ${ticket.id}</p>
+    <p><strong>Subject:</strong> ${ticket.subject}</p>
+
+    <p><strong>Reason for Rejection:</strong></p>
+    <p>${ticket.rejection_reason}</p>
+
+    <br/>
+    <p>If you have questions, please contact support.</p>
+  `;
+
+  await transporter.sendMail({
+    from: `"Ticket System" <${process.env.SMTP_USER}>`,
+    to,
+    subject: `Ticket #${ticket.id} Rejected`,
+    html
+  });
+};
+
+
+// ------------------- mail send to admin when ticket status is updated -------------------
+
+export const sendTicketStatusUpdateEmail = async ({ to, ticket }) => {
+  const html = `
+    <h3>Ticket Status Updated</h3>
+
+    <p>The status of a ticket has been updated.</p>
+
+    <p><strong>Ticket ID:</strong> ${ticket.id}</p>
+    <p><strong>Subject:</strong> ${ticket.subject}</p>
+    <p><strong>Old Status:</strong> ${ticket.old_status}</p>
+    <p><strong>New Status:</strong> ${ticket.new_status}</p>
+
+    <br/>
+    <p>Please login to track the progress.</p>
+  `;
+
+  await transporter.sendMail({
+    from: `"Ticket System" <${process.env.SMTP_USER}>`,
+    to,
+    subject: `Ticket #${ticket.id} Status Updated`,
+    html
+  });
+};
+
+export const sendAgentCommentEmail = async ({
+  to,
+  ticketId,
+  subject,
+  comment,
+  recipientType
+}) => {
+  const html = `
+    <h3>New Comment on Ticket</h3>
+
+    <p>A new comment has been added by the <strong>Agent</strong>.</p>
+
+    <p><strong>Ticket ID:</strong> ${ticketId}</p>
+
+    ${subject ? `<p><strong>Comment Subject:</strong> ${subject}</p>` : ''}
+
+    <p><strong>Comment:</strong></p>
+    <p>${comment}</p>
+
+    <br/>
+    <p>Please login to view the ticket for more details.</p>
+  `;
+
+  await transporter.sendMail({
+    from: `"Ticket System" <${process.env.SMTP_USER}>`,
+    to,
+    subject: `New Comment on Ticket #${ticketId}`,
+    html
+  });
+};
