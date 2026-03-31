@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Ticket - Agent</title>
+    <title>View Ticket - Customer</title>
     <link rel="stylesheet" href="../../css/style.css">
 </head>
 <body>
@@ -15,31 +15,38 @@
             </div>
             <ul class="sidebar-menu">
                 <li><a href="dashboard.html">📊 Dashboard</a></li>
-                <li><a href="unassigned-tickets.html">📥 Unassigned Tickets</a></li>
-                <li><a href="my-tickets.html">📋 My Tickets</a></li>
+                <li><a href="tickets.html" class="active">📋 My Tickets</a></li>
+                <li><a href="create-ticket.html">➕ Create Ticket</a></li>
+                <li><a href="profile.html">👤 Profile</a></li>
                 <li><a href="#" onclick="logout()">🚪 Logout</a></li>
             </ul>
         </nav>
 
         <!-- ========== MAIN CONTENT ========== -->
         <div class="main-content">
+            <!-- Header -->
             <header class="header">
                 <h1>View Ticket</h1>
                 <div class="user-info">
                     <span id="user-name">Loading...</span>
-                    <span class="role-badge">Agent</span>
+                    <span class="role-badge">Customer</span>
                 </div>
             </header>
 
+            <!-- Content Area -->
             <main class="content">
+                <!-- Alert Container -->
                 <div id="alert-container"></div>
 
+                <!-- Ticket Details -->
                 <div class="card">
                     <div class="card-header">
                         <h3>Ticket #<span id="ticket-id">-</span>: <span id="ticket-subject">Loading...</span></h3>
                     </div>
                     <div class="card-body" id="ticket-container">
-                        <div class="loading"><div class="spinner"></div></div>
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -50,79 +57,89 @@
                     </div>
                     <div class="card-body">
                         <div id="comments-container">
-                            <div class="loading"><div class="spinner"></div></div>
+                            <div class="loading">
+                                <div class="spinner"></div>
+                            </div>
                         </div>
 
                         <!-- Add Comment Form -->
-                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
-                            <h4>Add Comment</h4>
-                            <form id="comment-form">
-                                <div class="form-group">
-                                    <label for="comment-subject">Subject (Optional)</label>
-                                    <input type="text" id="comment-subject" placeholder="Comment subject...">
-                                </div>
-                                <div class="form-group">
-                                    <label for="comment-text">Comment</label>
-                                    <textarea id="comment-text" required placeholder="Enter your comment..."></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Add Comment</button>
-                            </form>
-                        </div>
+                        <hr style="margin: 20px 0;">
+                        <h4>Add Comment</h4>
+                        <form id="comment-form">
+                            <div class="form-group">
+                                <label for="comment-text">Comment</label>
+                                <textarea id="comment-text" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Comment</button>
+                        </form>
                     </div>
                 </div>
 
+                <!-- Back Button -->
                 <div class="mt-20">
-                    <a href="my-tickets.html" class="btn btn-secondary">Back to My Tickets</a>
-                    <a href="edit-ticket.html?id=" id="edit-link" class="btn btn-warning">Edit Ticket</a>
+                    <a href="tickets.html" class="btn btn-secondary">Back to Tickets</a>
                 </div>
             </main>
 
+            <!-- Footer -->
             <footer class="footer">
                 <p>&copy; 2024 Ticket Management System</p>
             </footer>
         </div>
     </div>
 
+    <!-- JavaScript Files -->
     <script src="../../js/api.js"></script>
     <script src="../../js/auth.js"></script>
     <script src="../../js/utils.js"></script>
 
     <script>
+        // Check authentication
         requireAuth();
 
+        // Get ticket ID from URL
         const ticketId = getUrlParam('id');
-        if (!ticketId) window.location.href = 'my-tickets.html';
 
-        document.getElementById('edit-link').href = 'edit-ticket.html?id=' + ticketId;
+        if (!ticketId) {
+            window.location.href = 'tickets.html';
+        }
 
+        // Load data when page loads
         document.addEventListener('DOMContentLoaded', async function() {
             loadUserProfile();
             loadTicketDetails();
             loadComments();
         });
 
+        // Load user profile
         async function loadUserProfile() {
             try {
                 const profile = await getCustomerProfile();
                 document.getElementById('user-name').textContent = profile.name || 'User';
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error loading profile:', error);
             }
         }
 
+        // Load ticket details
         async function loadTicketDetails() {
             try {
-                const response = await getAgentTicket(ticketId);
+                const response = await getCustomerTicket(ticketId);
                 const ticket = response.ticket || response;
 
                 document.getElementById('ticket-id').textContent = ticket.id;
                 document.getElementById('ticket-subject').textContent = ticket.subject;
 
+                // Render ticket details
                 document.getElementById('ticket-container').innerHTML = `
                     <div class="ticket-details">
                         <div class="detail-item">
                             <label>Status</label>
                             <div class="value"><span class="badge ${getStatusClass(ticket.status)}">${ticket.status}</span></div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Approval Status</label>
+                            <div class="value"><span class="badge ${getStatusClass(ticket.approval_status)}">${ticket.approval_status}</span></div>
                         </div>
                         <div class="detail-item">
                             <label>Priority</label>
@@ -141,18 +158,6 @@
                             <div class="value">${escapeHtml(ticket.environment)}</div>
                         </div>
                         <div class="detail-item">
-                            <label>Requester</label>
-                            <div class="value">${escapeHtml(ticket.requester)}</div>
-                        </div>
-                        <div class="detail-item">
-                            <label>Contact Email</label>
-                            <div class="value">${escapeHtml(ticket.contact_email)}</div>
-                        </div>
-                        <div class="detail-item">
-                            <label>Account Name</label>
-                            <div class="value">${escapeHtml(ticket.account_name)}</div>
-                        </div>
-                        <div class="detail-item">
                             <label>Created At</label>
                             <div class="value">${formatDateTime(ticket.created_at)}</div>
                         </div>
@@ -165,22 +170,22 @@
                             <div class="value">${ticket.sla_hours} hours</div>
                         </div>
                         <div class="detail-item">
-                            <label>Waiting for Customer</label>
-                            <div class="value">${ticket.waiting_for_customer ? 'Yes' : 'No'}</div>
+                            <label>Assigned To</label>
+                            <div class="value">${ticket.assignee_name || 'Not Assigned'}</div>
                         </div>
                     </div>
 
                     <div style="margin-top: 20px;">
                         <h4>Description</h4>
                         <p style="background: #f8f9fc; padding: 15px; border-radius: 5px;">
-                            ${escapeHtml(ticket.description) || 'No description.'}
+                            ${escapeHtml(ticket.description) || 'No description provided.'}
                         </p>
                     </div>
 
                     ${ticket.rca ? `
                         <div style="margin-top: 20px;">
                             <h4>Root Cause Analysis (RCA)</h4>
-                            <p style="background: #d4edda; padding: 15px; border-radius: 5px;">
+                            <p style="background: #f8f9fc; padding: 15px; border-radius: 5px;">
                                 ${escapeHtml(ticket.rca)}
                             </p>
                         </div>
@@ -189,28 +194,42 @@
                     ${ticket.resolution ? `
                         <div style="margin-top: 20px;">
                             <h4>Resolution</h4>
-                            <p style="background: #d4edda; padding: 15px; border-radius: 5px;">
+                            <p style="background: #f8f9fc; padding: 15px; border-radius: 5px;">
                                 ${escapeHtml(ticket.resolution)}
+                            </p>
+                        </div>
+                    ` : ''}
+
+                    ${ticket.rejection_reason ? `
+                        <div style="margin-top: 20px;">
+                            <h4>Rejection Reason</h4>
+                            <p style="background: #f8d7da; padding: 15px; border-radius: 5px; color: #721c24;">
+                                ${escapeHtml(ticket.rejection_reason)}
                             </p>
                         </div>
                     ` : ''}
                 `;
             } catch (error) {
+                console.error('Error loading ticket:', error);
                 document.getElementById('ticket-container').innerHTML =
-                    '<p class="text-center">Error loading ticket.</p>';
+                    '<p class="text-center">Error loading ticket details.</p>';
             }
         }
 
+        // Load comments
         async function loadComments() {
             try {
                 const response = await getTicketComments(ticketId);
                 const comments = response.comments || response || [];
                 renderComments(comments);
             } catch (error) {
-                document.getElementById('comments-container').innerHTML = '<p>No comments.</p>';
+                console.error('Error loading comments:', error);
+                document.getElementById('comments-container').innerHTML =
+                    '<p>No comments yet.</p>';
             }
         }
 
+        // Render comments
         function renderComments(comments) {
             const container = document.getElementById('comments-container');
 
@@ -224,12 +243,11 @@
                 html += `
                     <div class="comment">
                         <div class="comment-header">
-                            <span class="comment-author">${escapeHtml(comment.commented_by_name || comment.user_name || 'User')} (${escapeHtml(comment.commented_role || comment.user_role || 'user')})</span>
+                            <span class="comment-author">${escapeHtml(comment.user_name || 'User')} (${escapeHtml(comment.user_role || 'user')})</span>
                             <span class="comment-date">${formatDateTime(comment.created_at)}</span>
                         </div>
-                        ${comment.comment_subject ? `<strong>${escapeHtml(comment.comment_subject)}</strong>` : ''}
                         <div class="comment-body">
-                            <p>${escapeHtml(comment.comment_text || comment.comment || '')}</p>
+                            <p>${escapeHtml(comment.comment)}</p>
                         </div>
                     </div>
                 `;
@@ -242,15 +260,13 @@
         document.getElementById('comment-form').addEventListener('submit', async function(event) {
             event.preventDefault();
 
-            const subject = document.getElementById('comment-subject').value;
             const text = document.getElementById('comment-text').value;
 
             try {
-                await addAgentComment(ticketId, { subject, text });
+                await addCustomerComment(ticketId, { text });
                 showAlert('Comment added successfully!', 'success');
 
                 // Clear form and reload comments
-                document.getElementById('comment-subject').value = '';
                 document.getElementById('comment-text').value = '';
                 loadComments();
             } catch (error) {

@@ -50,6 +50,11 @@
                     Login
                 </button>
             </form>
+
+            <!-- Clear Session Link -->
+            <p style="text-align: center; margin-top: 15px;">
+                <a href="#" onclick="clearSession(); return false;" style="color: #666; font-size: 14px;">Clear Session & Reload</a>
+            </p>
         </div>
     </div>
 
@@ -63,6 +68,15 @@
         // LOGIN PAGE SCRIPT
         // Simple and easy to understand!
         // =============================================
+
+        // Function to clear session data
+        function clearSession() {
+            localStorage.clear();
+            showAlert('Session cleared! Page will reload...', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
 
         // If user is already logged in, redirect to dashboard
         if (isLoggedIn()) {

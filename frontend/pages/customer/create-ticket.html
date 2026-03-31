@@ -143,11 +143,14 @@
                                 </div>
                             </div>
 
+                            <!-- File attachments disabled - AWS S3 removed -->
+                            <!--
                             <div class="form-group">
                                 <label for="attachments">Attachments (Max 20KB per file)</label>
                                 <input type="file" id="attachments" name="attachments" multiple>
                                 <small style="color: #666;">You can select multiple files</small>
                             </div>
+                            -->
 
                             <div class="mt-20">
                                 <button type="submit" class="btn btn-success">Create Ticket</button>
@@ -230,31 +233,24 @@
         document.getElementById('ticket-form').addEventListener('submit', async function(event) {
             event.preventDefault();
 
-            // Create FormData object (handles file uploads)
-            const formData = new FormData();
-
-            // Add all form fields
-            formData.append('requester', document.getElementById('requester').value);
-            formData.append('contact_email', document.getElementById('contact_email').value);
-            formData.append('contact_phone', document.getElementById('contact_phone').value);
-            formData.append('account_name', document.getElementById('account_name').value);
-            formData.append('subject', document.getElementById('subject').value);
-            formData.append('description', document.getElementById('description').value);
-            formData.append('category', document.getElementById('category').value);
-            formData.append('sub_category', document.getElementById('sub_category').value);
-            formData.append('type', document.getElementById('type').value);
-            formData.append('environment', document.getElementById('environment').value);
-            formData.append('priority', document.getElementById('priority').value);
-            formData.append('sla_hours', document.getElementById('sla_hours').value);
-
-            // Add attachments
-            const attachments = document.getElementById('attachments').files;
-            for (let i = 0; i < attachments.length; i++) {
-                formData.append('attachments', attachments[i]);
-            }
+            // Create JSON object for ticket data
+            const ticketData = {
+                requester: document.getElementById('requester').value,
+                contact_email: document.getElementById('contact_email').value,
+                contact_phone: document.getElementById('contact_phone').value,
+                account_name: document.getElementById('account_name').value,
+                subject: document.getElementById('subject').value,
+                description: document.getElementById('description').value,
+                category: document.getElementById('category').value,
+                sub_category: document.getElementById('sub_category').value,
+                type: document.getElementById('type').value,
+                environment: document.getElementById('environment').value,
+                priority: document.getElementById('priority').value,
+                sla_hours: document.getElementById('sla_hours').value
+            };
 
             try {
-                await createCustomerTicket(formData);
+                await createCustomerTicket(ticketData);
                 showAlert('Ticket created successfully!', 'success');
 
                 // Redirect to tickets list after 2 seconds
