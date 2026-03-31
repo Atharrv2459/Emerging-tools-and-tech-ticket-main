@@ -13,7 +13,7 @@ export const getTicketDetails = async (req, res) => {
         c.name AS customer_name,
         a.name AS assignee_name
       FROM tickets t
-      JOIN users c ON t.customer_id = c.id
+      JOIN users c ON t.requester_id = c.id
       LEFT JOIN users a ON t.assignee_id = a.id
       WHERE t.id = $1
     `;
@@ -23,7 +23,7 @@ export const getTicketDetails = async (req, res) => {
 
 
     if (role === 'customer') {
-      query += ` AND t.customer_id = $2`;
+      query += ` AND t.requester_id = $2`;
       values.push(userId);
     }
 
