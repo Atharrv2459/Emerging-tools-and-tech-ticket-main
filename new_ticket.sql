@@ -24,10 +24,10 @@ SET row_security = off;
 -- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
 --
 
-CREATE SCHEMA public;
+CREATE SCHEMA IF NOT EXISTS public;
 
 
-ALTER SCHEMA public OWNER TO pg_database_owner;
+ALTER SCHEMA public OWNER TO postgres;
 
 --
 -- TOC entry 5018 (class 0 OID 0)
@@ -1916,3 +1916,5 @@ ALTER TABLE ONLY public.users
 -- PostgreSQL database dump complete
 --
 
+
+ALTER DATABASE new_ticket SET search_path TO public;

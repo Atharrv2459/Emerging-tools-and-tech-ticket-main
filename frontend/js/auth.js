@@ -81,9 +81,8 @@ function getDashboardUrl() {
     } else if (user.role === 'agent') {
         if (user.agentType === 'admin') {
             return basePath + 'pages/admin/dashboard.html';
-        } else if (user.agentType === 'delivery_lead') {
-            return basePath + 'pages/agent/dl-dashboard.html';
         } else {
+            // All agents (normal, delivery_lead, hod) go to agent dashboard
             return basePath + 'pages/agent/dashboard.html';
         }
     }

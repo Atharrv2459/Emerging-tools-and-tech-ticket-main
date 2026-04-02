@@ -231,10 +231,10 @@ function escapeHtml(text) {
  */
 function getSubcategories(category) {
     const subcategories = {
-        'SAP': ['MM', 'SD', 'FI', 'CO', 'FICO', 'HR', 'PP', 'PM', 'QM', 'WM', 'ABAP', 'BASIS'],
-        'Product': ['Vendor Portal', 'Customer Portal', 'Supplier Portal'],
-        'Integration': ['SAP-EDI', 'Portal-SAP', 'Email Integration'],
-        'Other': ['General Query', 'Access Request', 'Other']
+        'SAP': ['MM', 'SD', 'FI', 'ABAP', 'BASIS'],
+        'Product': ['Vendor Portal', 'Customer Portal', 'Tax', 'General'],
+        'Integration': ['Middleware'],
+        'Other': ['Other']
     };
     return subcategories[category] || [];
 }

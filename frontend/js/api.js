@@ -4,7 +4,9 @@
    =========================================== */
 
 // Change this URL to your backend server address
-const API_URL = 'http://localhost:5000/api';
+// When running in Docker, use relative path (nginx proxies /api to backend)
+// When running locally, use 'http://localhost:5000/api'
+const API_URL = '/api';
 
 /**
  * Make an API request
@@ -92,23 +94,41 @@ async function getCustomerTickets() {
 
 /**
  * Get customer ticket counts (for dashboard)
+ * Calculates counts from the tickets list
  */
 async function getCustomerTicketCounts() {
-    const [open, closed, unassigned, uat] = await Promise.all([
-        apiRequest('/customer/tickets/open/count'),
-        apiRequest('/customer/tickets/closed/count'),
-        apiRequest('/customer/tickets/unassigned/count'),
-        apiRequest('/customer/tickets/uat/count')
-    ]);
-    return { open, closed, unassigned, uat };
+    try {
+        const tickets = await getCustomerTickets();
+        const ticketList = tickets.tickets || tickets || [];
+        
+        const open = ticketList.filter(t => t.status === 'Open' || t.status === 'Assigned' || 
+            t.status === 'Requirements' || t.status === 'Development' || t.status === 'Internal Testing').length;
+        const closed = ticketList.filter(t => t.status === 'Closed' || t.status === 'Resolved').length;
+        const unassigned = ticketList.filter(t => t.status === 'Unassigned').length;
+        const uat = ticketList.filter(t => t.status === 'UAT').length;
+        
+        return { 
+            open: { count: open }, 
+            closed: { count: closed }, 
+            unassigned: { count: unassigned }, 
+            uat: { count: uat } 
+        };
+    } catch (error) {
+        return { 
+            open: { count: 0 }, 
+            closed: { count: 0 }, 
+            unassigned: { count: 0 }, 
+            uat: { count: 0 } 
+        };
+    }
 }
 
 /**
  * Create a new ticket (customer)
- * @param {FormData} formData - Ticket data including files
+ * @param {object} ticketData - Ticket data object
  */
-async function createCustomerTicket(formData) {
-    return await apiRequest('/customer/ticket', 'POST', formData);
+async function createCustomerTicket(ticketData) {
+    return await apiRequest('/customer/ticket', 'POST', ticketData);
 }
 
 /**
@@ -116,7 +136,7 @@ async function createCustomerTicket(formData) {
  * @param {number} ticketId - Ticket ID
  */
 async function getCustomerTicket(ticketId) {
-    return await apiRequest('/customer/view-ticket/' + ticketId);
+    return await apiRequest('/ticket/ticket/' + ticketId);
 }
 
 /**
@@ -142,7 +162,7 @@ async function getTicketComments(ticketId) {
  * @param {object} commentData - Comment data {subject, text}
  */
 async function addCustomerComment(ticketId, commentData) {
-    return await apiRequest('/customer/tickets/' + ticketId + '/customer-comment', 'POST', commentData);
+    return await apiRequest('/customer/ticket/' + ticketId + '/comment', 'POST', { comment: commentData.text });
 }
 
 // ============ MANAGER API ============
@@ -180,7 +200,7 @@ async function getManagerCustomers() {
  * @param {number} ticketId - Ticket ID
  */
 async function getManagerTicket(ticketId) {
-    return await apiRequest('/manager/ticket/' + ticketId);
+    return await apiRequest('/ticket/ticket/' + ticketId);
 }
 
 /**
@@ -190,7 +210,7 @@ async function getManagerTicket(ticketId) {
  * @param {string} reason - Rejection reason (required if rejected)
  */
 async function approveRejectTicket(ticketId, action, reason = '') {
-    return await apiRequest('/manager/ticket/' + ticketId + '/approve', 'PATCH', {
+    return await apiRequest('/manager/ticket/' + ticketId + '/update', 'PATCH', {
         approval_status: action,
         rejection_reason: reason
     });
@@ -243,7 +263,7 @@ async function updateAgentTicket(ticketId, data) {
  * @param {object} commentData - Comment data {subject, text}
  */
 async function addAgentComment(ticketId, commentData) {
-    return await apiRequest('/agent/tickets/' + ticketId + '/agent-comment', 'POST', commentData);
+    return await apiRequest('/agent/tickets/' + ticketId + '/agent-comment', 'POST', { subject: commentData.subject, comment: commentData.text });
 }
 
 // ============ ADMIN API ============
@@ -254,62 +274,4 @@ async function addAgentComment(ticketId, commentData) {
  */
 async function addUser(userData) {
     return await apiRequest('/admin/add-user', 'POST', userData);
-}
-
-// ============ DELIVERY LEAD API ============
-
-/**
- * Get delivery lead tickets
- */
-async function getDeliveryLeadTickets() {
-    return await apiRequest('/delivery-lead/tickets');
-}
-
-/**
- * Get agents under delivery lead
- */
-async function getDeliveryLeadAgents() {
-    return await apiRequest('/delivery-lead/users/agents');
-}
-
-/**
- * Assign ticket to agent
- * @param {number} ticketId - Ticket ID
- * @param {number} agentId - Agent ID
- */
-async function assignTicketToAgent(ticketId, agentId) {
-    return await apiRequest('/delivery-lead/ticket/' + ticketId + '/assign', 'POST', { agentId });
-}
-
-/**
- * Get delivery lead team tickets
- */
-async function getDLTeamTickets() {
-    return await apiRequest('/delivery-lead/dl-team-tickets');
-}
-
-/**
- * Get delivery lead ticket by ID
- * @param {number} ticketId - Ticket ID
- */
-async function getDeliveryLeadTicket(ticketId) {
-    return await apiRequest('/delivery-lead/ticket/' + ticketId);
-}
-
-/**
- * Update delivery lead ticket
- * @param {number} ticketId - Ticket ID
- * @param {object} data - Updated ticket data
- */
-async function updateDeliveryLeadTicket(ticketId, data) {
-    return await apiRequest('/delivery-lead/updateTicket/' + ticketId, 'PATCH', data);
-}
-
-/**
- * Add delivery lead comment
- * @param {number} ticketId - Ticket ID
- * @param {object} commentData - Comment data {subject, text}
- */
-async function addDeliveryLeadComment(ticketId, commentData) {
-    return await apiRequest('/delivery-lead/tickets/' + ticketId + '/dl-comment', 'POST', commentData);
 }
