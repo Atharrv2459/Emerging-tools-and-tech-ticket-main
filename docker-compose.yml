@@ -50,6 +50,8 @@ services:
       dockerfile: Dockerfile
     container_name: ticket_frontend
     restart: unless-stopped
+    environment:
+      BACKEND_URL: backend:5000
     ports:
       - "80:80"
     depends_on:
