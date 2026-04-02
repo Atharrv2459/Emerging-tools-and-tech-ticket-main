@@ -1,7 +1,6 @@
 databases:
   - name: ticket-db
     databaseName: new_ticket
-    user: postgres
     plan: free  # Change to 'starter' for production ($7/month)
 
 services:
