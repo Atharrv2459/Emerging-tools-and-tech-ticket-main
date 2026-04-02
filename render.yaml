@@ -1,7 +1,6 @@
 databases:
   - name: ticket-db
     databaseName: new_ticket
-    user: postgres
     plan: free  # Change to 'starter' for production ($7/month)
 
 services:
@@ -37,7 +36,7 @@ services:
       - key: SMTP_PASS
         sync: false  # Set this in Render dashboard
 
-  # Frontend Web Service (using Docker/nginx for API proxying)
+  # Frontend Web Service (Docker with nginx)
   - type: web
     name: ticket-frontend
     runtime: docker
@@ -46,4 +45,4 @@ services:
     plan: free
     envVars:
       - key: BACKEND_URL
-        value: ticket-backend:10000  # Render internal service networking
+        value: ticket-backend.onrender.com  # Render public URL
