@@ -99,7 +99,3 @@ This project demonstrates practical full-stack engineering skills including:
 - Role-based access control
 - Frontend dashboard development
 - Docker and deployment readiness
-
-## Recruiter-Friendly Summary
-
-This project showcases the ability to build a real-world, workflow-driven application from end to end. It combines business logic, secure backend services, and a functional user interface to solve a real operational need: managing support tickets across multiple roles with clear accountability and governance.
